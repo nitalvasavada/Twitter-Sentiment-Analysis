@@ -1,0 +1,93 @@
+#import pip
+#pip.main(["install","twitter"])
+
+import json
+import twitter
+from twitter import Twitter
+from twitter import OAuth
+from twitter import TwitterHTTPError
+from twitter import TwitterStream
+
+ck = 'uGGHbbZ7VRJ8C4wlRxUrqzln4'
+cs = 'rLLYDjBSGMoSuY79KAUC0fZzpQtFIiya1gcyXmvOXUlqYjfGPa'
+at = '90406237-Dn7dKgarr3obHA4pyogWEOd6sR6TFnfZPEFU1xXYh'
+ats = 'ToIyX2mqjZxh6tCYBeRHWBDHLSvRp7YKBArSDsVIGUlYO'
+
+oauth = OAuth(at,ats,ck,cs)
+twit_api = Twitter(auth=oauth)
+q= '#SuperBowl'
+count = 100
+search_results= twit_api.search.tweets(q=q, count=count)
+statuses = search_results['statuses']
+statuses[0]['text']
+status_texts = [ status['text']for status in statuses ]
+screen_names = [ user_mention['screen_name']
+                for status in statuses
+                    for user_mention in status['entities']['user_mentions'] ]
+
+hashtags = [ hashtag['text']
+                for status in statuses
+                    for hashtag in status['entities']['hashtags']]
+    
+words=[w
+    for t in status_texts
+        for w in t.split() ]
+                
+print(json.dumps(status_texts[0:5], indent=1))
+print(json.dumps(screen_names[0:5], indent=1))
+print(json.dumps(hashtags[0:5], indent=1))
+print(json.dumps(words[0:5], indent=1))
+
+from collections import Counter
+for item in [words,screen_names , hashtags]:
+    c = Counter(item)
+    print(c.most_common()[:10])
+    print()
+                  
+pip.main(["install","prettytable"])
+from prettytable import PrettyTable
+
+for label,data in (('Word',words),('Screen Name',screen_names),('Hashtag',hashtags)):
+        pt = PrettyTable(field_names=[label, 'Count'])
+        c = Counter(data)
+        [ pt.add_row(kv) for kv in c.most_common()[:10]]
+        pt.align[label], pt.align['Count'] = 'l','r'
+        print(pt)
+retweets = [(status['retweet_count'],status['retweeted_status']['user']['screen_name'],status['text'])
+            for status in statuses
+                if status['retweet_count'] > 0 ]
+
+pt = PrettyTable(field_names=['Count', 'Screen Name', 'Text'])
+[pt.add_row(row) for row in sorted(retweets, reverse=True)[:5] ]
+pt.max_width['Text'] = 50
+pt.align= 'l'
+print(pt)
+_retweets = twit_api.statuses.retweets(id=317127304981667841)
+for r in _retweets:
+    print (r['user']['screen_name'])
+
+from matplotlib import pyplot as plt
+
+words_counts = sorted(Counter(words).values(), reverse=True)
+plt.loglog(word_counts)
+plt.ylabel("Freq")
+plt.xlabel("Word Rank")
+for label, data in (('Words', words),('Screen Names', screen_names),('Hashtags',hashtags)):
+    c = Counter(data)
+    plt.hist(list(c.values()))
+    plt.title(label)
+    plt.ylabel("Number of items in bin")
+    plt.xlabel("Bins (number of times an item appeared)")
+    plt.figure()
+   
+counts = [count for count, _, _ in retweets]
+plt.hist(counts)
+plt.tittle("Retweets")
+plt.xlabel('Bins (number of times retweeted)')
+plt.ylabel('Number of tweets in bin')
+print(counts)
+
+
+
+
+

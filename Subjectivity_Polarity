@@ -1,0 +1,52 @@
+import pip
+pip.main(["install","textblob"])
+import pandas as pd
+import json
+import twitter
+import nltk
+#nltk.download()
+
+from textblob import TextBlob
+from twitter import Twitter 
+from twitter import OAuth 
+from twitter import TwitterHTTPError 
+from twitter import TwitterStream 
+from pandas.io.json import json_normalize
+ACCESS_TOKEN = '90406237-Dn7dKgarr3obHA4pyogWEOd6sR6TFnfZPEFU1xXYh'
+ACCESS_SECRET = 'ToIyX2mqjZxh6tCYBeRHWBDHLSvRp7YKBArSDsVIGUlYO'
+consumer_key = 'uGGHbbZ7VRJ8C4wlRxUrqzln4'
+consumer_secret = 'rLLYDjBSGMoSuY79KAUC0fZzpQtFIiya1gcyXmvOXUlqYjfGPa'
+oauth = OAuth(ACCESS_TOKEN, ACCESS_SECRET, consumer_key, consumer_secret)
+twit_api = Twitter(auth=oauth)
+q= '#SuperBowl'
+count = 100
+search_results= twit_api.search.tweets(q=q, count=count)
+super =  search_results["statuses"]
+type(super)
+abc= json_normalize(super)
+#bde=abc["text"]
+#bde = bde.to_frame()
+abcd = abc["text"]
+#statuses[0]['text']
+status_texts = [ status['text']for status in statuses ]
+wiki = TextBlob(bde[0])
+
+
+polarity = []
+subjectivity = []
+
+for index, row in abcd.iteritems():
+    wiki = TextBlob(row)
+    polarity.append(wiki.sentiment.polarity)
+    subjectivity.append(wiki.sentiment.subjectivity)
+    
+    
+    
+
+
+percentile_list = pd.DataFrame(
+    {'Polarity': polarity,
+     'Subjectivity': subjectivity,
+    })
+    
+percentile_list.plot()
